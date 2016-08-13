@@ -33,17 +33,35 @@ end
 defimpl WhiteBread.Formatter.FailedStep,
 for: [ESpec.AssertionError, ExUnit.AssertionError] do
   def text(_, step, assertion_failure) do
-    print_assertion_failure assertion_failure
     %{text: step_text} = step
-    %{message: assestion_message} = assertion_failure
+    assestion_message = ExUnit.Formatter.format_assertion_error(assertion_failure, :infinity, &formatter/2, "")
     "#{step_text}: #{assestion_message}"
   end
 
-  defp print_assertion_failure(assertion_failure) do
-    msg = ExUnit.AssertionError.message(assertion_failure)
-    formatted = [:red | msg]
-                |> IO.ANSI.format(true)
-                |> IO.iodata_to_binary
-    IO.puts formatted
+  defp colorize(escape, string) do
+    [escape | string]
+    |> IO.ANSI.format
+    |> IO.iodata_to_binary
   end
+
+  defp formatter(:diff_enabled?, _),
+    do: true
+
+  defp formatter(:error_info, msg),
+    do: colorize(:red, msg)
+
+  defp formatter(:extra_info, msg),
+    do: colorize(:cyan, msg)
+
+  defp formatter(:location_info, msg),
+    do: colorize([:bright, :black], msg)
+
+  defp formatter(:diff_delete, msg),
+    do: colorize(:red, msg)
+
+  defp formatter(:diff_insert, msg),
+    do: colorize(:green, msg)
+
+  defp formatter(_,  msg),
+    do: msg
 end
