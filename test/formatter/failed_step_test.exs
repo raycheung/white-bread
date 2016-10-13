@@ -27,7 +27,7 @@ defmodule WhiteBread.Formatter.FailedStepTest do
     }
 
     output = FailedStep.text(assertion_failure, step, assertion_failure)
-    assert output == "failing step: this is my assertion message"
+    assert output =~ ~r/failing step: this is my assertion message/
   end
 
   test "Prints out other failing steps" do
